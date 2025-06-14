@@ -1,0 +1,48 @@
+DOCKER BUILD & PUSH USING JENKINS PIPELINE in git reposistory 14-06-2025 git docker jenkins
+PRE REQ:
+1.setup ubuntu server 22.04
+2.jenkins installl
+apt update -y
+apt install openjdk-21-jdk -y
+3.docker install
+curl https://get.docker.com | bash
+4.jenkin user we create the docker group
+5.jenkin manage plagin docker & docker hub reg & pipeline install
+6.jenkin manage cred proving docker creditionals login 
+7.create repository in git hub & we need provide dockerfile in git repository
+8.create dockerhub repository 
+
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = 'venutej220/jenkins'  // Your Docker Hub repo
+        IMAGE_TAG = 'v1.0'
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git url: 'https://github.com/venu222m/docker.git', branch: 'main'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
+                }
+            }
+        }
+
+        stage('Push to DockerHub') {
+            steps {
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-creds') {
+                        docker.image("${IMAGE_NAME}:${IMAGE_TAG}").push()
+                    }
+                }
+            }
+        }
+    }
+ }
