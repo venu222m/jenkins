@@ -7,6 +7,15 @@ apt install openjdk-21-jdk -y
 3.docker install
 curl https://get.docker.com | bash
 4.jenkin user we create the docker group
+# 1. Add jenkins user to the docker group
+sudo usermod -aG docker jenkins
+
+# 2. Restart Jenkins to apply group membership changes
+sudo systemctl restart jenkins
+
+# 3. (Optional) Restart Docker service if needed
+# sudo systemctl restart docker
+
 5.jenkin manage plagin docker & docker hub reg & pipeline install
 6.jenkin manage cred proving docker creditionals login 
 7.create repository in git hub & we need provide dockerfile in git repository
