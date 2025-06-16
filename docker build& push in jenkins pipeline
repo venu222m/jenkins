@@ -27,6 +27,7 @@ pipeline {
     environment {
         IMAGE_NAME = 'venutej220/jenkins'  // Your Docker Hub repo
         IMAGE_TAG = 'v1.0'
+        CONTAINER_NAME = 'jenkins-app'
     }
 
     stages {
@@ -53,5 +54,27 @@ pipeline {
                 }
             }
         }
+
+        stage('Run Docker Container') {
+            steps {
+                script {
+                    // Stop and remove old container if exists
+                    sh """
+                        docker rm -f ${CONTAINER_NAME} || true
+                    """
+                    
+                    // Run new container
+                    sh """
+                        docker run -d --name ${CONTAINER_NAME} -p 8081:80 ${IMAGE_NAME}:${IMAGE_TAG}
+                    """
+                }
+            }
+        }
     }
- }
+
+    post {
+        always {
+            echo "Pipeline finished with status: ${currentBuild.currentResult}"
+        }
+    }
+}
