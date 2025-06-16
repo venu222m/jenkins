@@ -1,0 +1,77 @@
+pipeline {
+    agent any
+
+    parameters {
+        choice(
+            name: 'ENVIRONMENT',
+            choices: ['dev', 'staging', 'production'],
+            description: 'Select the deployment environment'
+        )
+        string(
+            name: 'IMAGE_TAG',
+            defaultValue: 'v1.0',
+            description: 'Docker image tag'
+        )
+        choice(
+            name: 'HOST_PORT',
+            choices: ['8081', '8082', '9090'],
+            description: 'Port to expose the container'
+        )
+        booleanParam(
+            name: 'RUN_CONTAINER',
+            defaultValue: true,
+            description: 'Run the container after pushing?'
+        )
+    }
+
+    environment {
+        IMAGE_NAME = 'venutej220/jenkins'
+        CONTAINER_NAME = 'jenkins-app'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git url: 'https://github.com/venu222m/docker.git', branch: 'main'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    docker.build("${IMAGE_NAME}:${params.IMAGE_TAG}")
+                }
+            }
+        }
+
+        stage('Push to DockerHub') {
+            steps {
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-creds') {
+                        docker.image("${IMAGE_NAME}:${params.IMAGE_TAG}").push()
+                    }
+                }
+            }
+        }
+
+        stage('Run Container') {
+            when {
+                expression { params.RUN_CONTAINER }
+            }
+            steps {
+                script {
+                    sh """
+                        docker rm -f ${CONTAINER_NAME} || true
+                        docker run -d --name ${CONTAINER_NAME} -p ${params.HOST_PORT}:80 ${IMAGE_NAME}:${params.IMAGE_TAG}
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "Build complete. Tag: ${params.IMAGE_TAG}, Port: ${params.HOST_PORT}, Env: ${params.ENVIRONMENT}"
+        }
+    }
+}
