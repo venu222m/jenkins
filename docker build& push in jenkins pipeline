@@ -1,9 +1,16 @@
-DOCKER BUILD & PUSH USING JENKINS PIPELINE in git reposistory 14-06-2025 git docker jenkins
+DOCKER BUILD & &RUN & PUSH USING JENKINS PIPELINE in git reposistory 14-06-2025 git docker jenkins
 PRE REQ:
 1.setup ubuntu server 22.04
 2.jenkins installl
 apt update -y
 apt install openjdk-21-jdk -y
+sudo wget -O /etc/apt/keyrings/jenkins-keyring.asc \
+  https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+echo "deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc]" \
+  https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
+  /etc/apt/sources.list.d/jenkins.list > /dev/null
+sudo apt-get update
+sudo apt-get install jenkins
 3.docker install
 curl https://get.docker.com | bash
 4.jenkin user we create the docker group
