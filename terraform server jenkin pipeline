@@ -1,0 +1,38 @@
+terraform server build with jenkins pipeline
+
+pipeline {
+    agent any
+
+    environment {
+        AWS_REGION = 'us-east-1'  // Set your AWS region here
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git url: 'https://github.com/YOUR-USER/YOUR-REPO.git', branch: 'main'
+            }
+        }
+
+        stage('Terraform Init & Apply') {
+            steps {
+                script {
+                    withCredentials([[
+                        $class: 'AmazonWebServicesCredentialsBinding',
+                        credentialsId: 'aws-credentials',
+                        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                    ]]) {
+                        sh '''
+                            export AWS_DEFAULT_REGION=$AWS_REGION
+
+                            terraform init
+                            terraform plan
+                            terraform apply -auto-approve
+                        '''
+                    }
+                }
+            }
+        }
+    }
+}
