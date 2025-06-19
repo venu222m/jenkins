@@ -87,21 +87,20 @@ pipeline {
 }
 ========================================DOCKER BUILD & &RUN & PUSH USING JENKINS PIPELINE (ECR)
 1.Use Jenkins Credentials for All Secrets
-1️⃣ Store secrets in Jenkins Credentials:
+1.aws creditionals plugin install in manage plugin
+2. Store secrets in Jenkins Credentials:
 AWS Credentials (Access Key & Secret Key) → create as AWS Credentials with ID aws-creds.
-
-ECR Account ID → store as "Secret Text" with ID ecr-account-id.
-
-Region → store as "Secret Text" with ID aws-region.
-
-Repository Name → store as "Secret Text" with ID ecr-repository.
-2.
 AWS CREDITIOANLS 
 Kind: AWS Credentials  
 ID: aws-creds  
 Access Key ID: XXXXXXXXXXXXX  
 Secret Access Key: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX IN  THE MANAGE CREDITONALS IN JENKINS
-3.aws creditionals plugin install in manage plugin
+3.ECR Account ID → store as "Secret Text" with ID ecr-account-id.
+
+4.Region → store as "Secret Text" with ID aws-region.
+
+5.Repository Name → store as "Secret Text" with ID ecr-repository.
+
 
 
 
@@ -118,7 +117,7 @@ pipeline {
         stage('Build and Push Docker Image to ECR') {
             steps {
                 withCredentials([
-                    [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-creds'],
+                    [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-creds'],    
                     string(credentialsId: 'ecr-account-id', variable: 'ECR_ACCOUNT_ID'),
                     string(credentialsId: 'aws-region', variable: 'AWS_REGION'),
                     string(credentialsId: 'ecr-repository', variable: 'ECR_REPOSITORY')
