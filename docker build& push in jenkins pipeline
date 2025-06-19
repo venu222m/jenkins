@@ -1,4 +1,4 @@
-DOCKER BUILD & &RUN & PUSH USING JENKINS PIPELINE in git reposistory 14-06-2025 git docker jenkins
+DOCKER BUILD & &RUN & PUSH USING JENKINS PIPELINE(docker hub) in git reposistory 14-06-2025 git docker jenkins
 PRE REQ:
 1.setup ubuntu server 22.04
 2.jenkins installl
@@ -73,6 +73,82 @@ pipeline {
                     // Run new container
                     sh """
                         docker run -d --name ${CONTAINER_NAME} -p 8081:80 ${IMAGE_NAME}:${IMAGE_TAG}
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "Pipeline finished with status: ${currentBuild.currentResult}"
+        }
+    }
+}
+========================================DOCKER BUILD & &RUN & PUSH USING JENKINS PIPELINE (ECR)
+1.Use Jenkins Credentials for All Secrets
+1️⃣ Store secrets in Jenkins Credentials:
+AWS Credentials (Access Key & Secret Key) → create as AWS Credentials with ID aws-creds.
+
+ECR Account ID → store as "Secret Text" with ID ecr-account-id.
+
+Region → store as "Secret Text" with ID aws-region.
+
+Repository Name → store as "Secret Text" with ID ecr-repository.
+2.
+AWS CREDITIOANLS 
+Kind: AWS Credentials  
+ID: aws-creds  
+Access Key ID: XXXXXXXXXXXXX  
+Secret Access Key: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX IN  THE MANAGE CREDITONALS IN JENKINS
+3.aws creditionals plugin install in manage plugin
+
+
+
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git url: 'https://github.com/venu222m/docker.git', branch: 'main'
+            }
+        }
+
+        stage('Build and Push Docker Image to ECR') {
+            steps {
+                withCredentials([
+                    [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-creds'],
+                    string(credentialsId: 'ecr-account-id', variable: 'ECR_ACCOUNT_ID'),
+                    string(credentialsId: 'aws-region', variable: 'AWS_REGION'),
+                    string(credentialsId: 'ecr-repository', variable: 'ECR_REPOSITORY')
+                ]) {
+                    script {
+                        env.IMAGE_TAG = 'v1.0'
+                        env.IMAGE_URI = "${ECR_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${IMAGE_TAG}"
+                        env.CONTAINER_NAME = 'jenkins-app'
+
+                        sh """
+                            echo "Building Docker Image..."
+                            docker build -t ${IMAGE_URI} .
+
+                            echo "Logging into ECR..."
+                            aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+
+                            echo "Pushing Docker Image to ECR..."
+                            docker push ${IMAGE_URI}
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Run Docker Container') {
+            steps {
+                script {
+                    sh """
+                        docker rm -f ${CONTAINER_NAME} || true
+                        docker run -d --name ${CONTAINER_NAME} -p 8082:80 ${IMAGE_URI}
                     """
                 }
             }
