@@ -5,6 +5,18 @@ Docker installed (if you are building Docker images)
 Kubernetes credentials (kubeconfig file, service account, etc.)
 
 Jenkins credentials configured (can use Kubernetes service account or credentials plugin)
+| Plugin                              | Purpose                                                     | Required?                                   |
+| ----------------------------------- | ----------------------------------------------------------- | ------------------------------------------- |
+| ✅ **Pipeline**                      | Enables Jenkins Pipeline (declarative + scripted pipelines) | ✅ Essential                                 |
+| ✅ **Docker Pipeline**               | Allows Docker builds inside pipelines                       | ✅ If you’re building Docker images          |
+| ✅ **Kubernetes CLI Plugin**         | Allows you to install and manage `kubectl` inside Jenkins   | ✅ If Jenkins agent doesn’t have kubectl     |
+| ✅ **Kubernetes Credentials Plugin** | Manage Kubernetes kubeconfig files as credentials           | ✅ Essential for secure kubeconfig injection |
+| ✅ **Credentials Plugin**            | Manage credentials securely inside Jenkins                  | ✅ Absolutely essential                      |
+| ✅ **Git Plugin**                    | Enables cloning Git repositories                            | ✅ Essential                                 |
+| ✅ **GitHub Branch Source Plugin**   | For GitHub integration, webhook triggers                    | ✅ Recommended                               |
+| ✅ **Blue Ocean (optional)**         | Modern Jenkins UI for pipelines                             | Optional                                    |
+| ✅ **Docker Commons Plugin**         | For Docker credential storage                               | ✅ If pushing to Docker Hub or registries    |
+
 
 your-repo/
 │
