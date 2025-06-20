@@ -1,0 +1,63 @@
+jenkins Kubernetes CLI (kubectl) configured
+
+Docker installed (if you are building Docker images)
+
+Kubernetes credentials (kubeconfig file, service account, etc.)
+
+Jenkins credentials configured (can use Kubernetes service account or credentials plugin)
+
+your-repo/
+│
+├── src/           # your app code
+├── Dockerfile
+├── Jenkinsfile
+└── k8s/
+    ├── deployment.yaml
+    └── service.yaml
+
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = "yourdockerhubusername/yourapp:latest"
+        KUBECONFIG_CREDENTIALS_ID = 'kubeconfig-id'
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git url: 'https://github.com/your-repo/app.git', branch: 'main'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    docker.build("${DOCKER_IMAGE}")
+                }
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                withDockerRegistry([credentialsId: 'dockerhub-credentials', url: '']) {
+                    script {
+                        docker.image("${DOCKER_IMAGE}").push()
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                withCredentials([file(credentialsId: "${KUBECONFIG_CREDENTIALS_ID}", variable: 'KUBECONFIG_FILE')]) {
+                    sh '''
+                    export KUBECONFIG=$KUBECONFIG_FILE
+                    kubectl apply -f k8s/deployment.yaml
+                    kubectl apply -f k8s/service.yaml
+                    '''
+                }
+            }
+        }
+    }
+}
