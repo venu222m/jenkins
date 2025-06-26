@@ -17,6 +17,21 @@ Jenkins credentials configured (can use Kubernetes service account or credential
 | ✅ **Blue Ocean (optional)**         | Modern Jenkins UI for pipelines                             | Optional                                    |
 | ✅ **Docker Commons Plugin**         | For Docker credential storage                               | ✅ If pushing to Docker Hub or registries    |
 
+Step-by-step:
+Go to Jenkins → Manage Jenkins → Credentials.
+
+Choose the appropriate domain or use "(global)".
+
+Click “Add Credentials”.
+
+Kind: Select "Secret file"
+
+File: Upload your ~/.kube/config
+
+ID: Use an ID like kubeconfig-id (must match what you use in your Jenkinsfile)
+
+Description: (Optional)
+
 
 your-repo/
 │
