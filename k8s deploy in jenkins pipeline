@@ -55,7 +55,7 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = "yourdockerhubusername/yourapp:latest"
-        KUBECONFIG_CREDENTIALS_ID = 'kubeconfig-id'
+        KUBECONFIG_CREDENTIALS_ID = 'kubeconfig-eks' // This should match your Jenkins secret file ID
     }
 
     stages {
@@ -83,6 +83,7 @@ pipeline {
             }
         }
 
+        stages {
         stage('Deploy to Kubernetes') {
             steps {
                 withCredentials([file(credentialsId: "${KUBECONFIG_CREDENTIALS_ID}", variable: 'KUBECONFIG_FILE')]) {
