@@ -33,6 +33,14 @@ ID: Use an ID like kubeconfig-id (must match what you use in your Jenkinsfile)
 Description: (Optional)
 
 
+you're using AWS EKS, run:
+bash
+Copy
+Edit
+aws eks update-kubeconfig --name <your-cluster-name> --region <your-region>
+
+
+
 your-repo/
 │
 ├── src/           # your app code
