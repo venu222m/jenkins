@@ -54,14 +54,17 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "yourdockerhubusername/yourapp:latest"
-        KUBECONFIG_CREDENTIALS_ID = 'kubeconfig-eks' // This should match your Jenkins secret file ID
+        DOCKER_IMAGE = "yourdockerhubuser/yourapp:latest"
+        KUBECONFIG_CREDENTIALS_ID = 'kubeconfig-eks'        // Jenkins secret file
+        AWS_CREDS_ID = 'aws-creds'                          // Jenkins AWS credentials (username + password)
+        DOCKERHUB_CREDS_ID = 'dockerhub-credentials'        // Jenkins Docker Hub credentials
     }
 
     stages {
+
         stage('Checkout Code') {
             steps {
-                git url: 'https://github.com/your-repo/app.git', branch: 'main'
+                git url: 'https://github.com/your/repo.git', branch: 'main'
             }
         }
 
@@ -75,7 +78,7 @@ pipeline {
 
         stage('Push to Docker Hub') {
             steps {
-                withDockerRegistry([credentialsId: 'dockerhub-credentials', url: '']) {
+                withDockerRegistry([credentialsId: "${DOCKERHUB_CREDS_ID}", url: '']) {
                     script {
                         docker.image("${DOCKER_IMAGE}").push()
                     }
@@ -83,17 +86,32 @@ pipeline {
             }
         }
 
-        stages {
         stage('Deploy to Kubernetes') {
             steps {
-                withCredentials([file(credentialsId: "${KUBECONFIG_CREDENTIALS_ID}", variable: 'KUBECONFIG_FILE')]) {
+                withCredentials([
+                    file(credentialsId: "${KUBECONFIG_CREDENTIALS_ID}", variable: 'KUBECONFIG_FILE'),
+                    usernamePassword(credentialsId: "${AWS_CREDS_ID}", usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')
+                ]) {
                     sh '''
+                    export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+                    export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+                    export AWS_DEFAULT_REGION=us-east-1
                     export KUBECONFIG=$KUBECONFIG_FILE
+
                     kubectl apply -f k8s/deployment.yaml
                     kubectl apply -f k8s/service.yaml
                     '''
                 }
             }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ Deployment successful!'
+        }
+        failure {
+            echo '❌ Deployment failed!'
         }
     }
 }
